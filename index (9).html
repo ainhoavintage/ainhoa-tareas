@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Ainhoa · Tareas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --crema: #FDFBF7;
+    --tarjeta: #FFFFFF;
+    --negro: #26221E;
+    --gris: #786F63;
+    --gris-claro: #C3BAAB;
+    --terracota: #B5573C;
+    --terracota-suave: #F1DCD3;
+    --oliva: #707A4E;
+    --oliva-suave: #E4E7D6;
+    --mostaza: #C99A3A;
+    --mostaza-suave: #F3E6C8;
+    --verde-ok: #5C8A5C;
+    --verde-ok-suave: #DCEBDC;
+    --borde: #EDE7DA;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  svg{ display:block; }
+  body{
+    margin:0; background:var(--crema); color:var(--negro);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .voz{ font-family:'Fraunces',serif; }
+  #app{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative; background:var(--crema); }
+
+  /* ---------- LOGIN ---------- */
+  .login-wrap{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:32px 24px; }
+  .login-title{ font-family:'Fraunces',serif; font-size:28px; text-align:center; margin-bottom:4px; }
+  .login-sub{ text-align:center; color:var(--gris); font-size:14px; margin-bottom:32px; }
+  .personas{ display:flex; flex-direction:column; gap:12px; }
+  .persona-tag{
+    position:relative; background:var(--tarjeta); border:1px solid var(--borde); border-radius:12px;
+    padding:20px 22px; font-size:17px; font-weight:500; text-align:left; cursor:pointer;
+    display:flex; align-items:center; gap:14px; box-shadow:0 1px 3px rgba(38,34,30,.04);
+  }
+  .persona-tag:active{ transform:scale(.98); background:var(--borde); }
+  .persona-tag .av{
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-size:15px; flex-shrink:0;
+  }
+
+  /* ---------- PIN ---------- */
+  .pin-wrap{ display:flex; flex-direction:column; align-items:center; padding:32px 24px; flex:1; justify-content:center; }
+  .pin-back{ align-self:flex-start; background:none; border:none; color:var(--gris); font-size:15px; display:flex; align-items:center; gap:6px; margin-bottom:24px; cursor:pointer; padding:8px 0; }
+  .pin-dots{ display:flex; gap:14px; margin:20px 0 28px; }
+  .pin-dot{ width:14px; height:14px; border-radius:50%; border:1.5px solid var(--gris-claro); }
+  .pin-dot.filled{ background:var(--terracota); border-color:var(--terracota); }
+  .pin-pad{ display:grid; grid-template-columns:repeat(3,70px); gap:16px; }
+  .pin-key{ width:70px; height:70px; border-radius:50%; background:var(--tarjeta); border:1px solid var(--borde); font-size:22px; font-family:'Fraunces',serif; box-shadow:0 1px 3px rgba(38,34,30,.04); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px; }
+  .pin-key:active{ background:var(--borde); transform:scale(.95); }
+  .pin-key.borrar{ color:var(--terracota); font-size:11px; font-weight:600; gap:3px; }
+  .pin-error{ color:var(--terracota); font-size:13px; margin-top:14px; min-height:16px; }
+
+  /* ---------- BIENVENIDA (post-PIN) ---------- */
+  .bienvenida-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; text-align:center; }
+  .bienvenida-wrap .voz{ font-size:26px; margin-bottom:8px; }
+  .bienvenida-wrap p{ color:var(--gris); font-size:14px; margin-bottom:32px; }
+
+  /* ---------- SCREENS ---------- */
+  .screen{ display:none; flex:1; flex-direction:column; padding:22px 18px 12px; }
+  .screen.activa{ display:flex; }
+  .saludo{ font-family:'Fraunces',serif; font-size:23px; }
+  .subsaludo{ font-size:13px; color:var(--gris); margin:2px 0 14px; }
+
+  .greeting-card{
+    background:var(--tarjeta); border:1px solid var(--borde); border-radius:16px; padding:18px 18px 16px;
+    margin-bottom:18px; box-shadow:0 1px 4px rgba(38,34,30,.05);
+  }
+  .greeting-card .saludo{ margin-bottom:2px; }
+  .greeting-stats{ display:flex; gap:18px; margin-top:12px; }
+  .greeting-stat{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--gris); }
+  .barra-progreso{ height:7px; background:var(--crema); border-radius:4px; overflow:hidden; margin-top:12px; border:1px solid var(--borde); }
+  .barra-progreso .fill{ height:100%; background:var(--oliva); border-radius:4px; transition:width .3s; }
+
+  .quickadd-card{ background:var(--terracota-suave); border-radius:16px; padding:16px 16px 14px; margin-bottom:18px; }
+  .quickadd-titulo{ font-size:12px; font-weight:600; color:#8a3c28; text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+  .quickadd-row{ display:flex; gap:8px; align-items:flex-end; }
+  .quickadd-row textarea{ flex:1; border:1px solid #dcbfb2; border-radius:10px; padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px; background:#fff; resize:none; min-height:44px; }
+  .mic-btn{ width:48px; height:48px; border-radius:50%; background:var(--terracota); color:#fff; border:none; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .mic-btn.grabando{ background:#8a3c28; animation:pulso 1s infinite; }
+  @keyframes pulso{ 0%{box-shadow:0 0 0 0 rgba(138,60,40,.4);} 70%{box-shadow:0 0 0 10px rgba(138,60,40,0);} 100%{box-shadow:0 0 0 0 rgba(138,60,40,0);} }
+  .quickadd-guardar{ margin-top:10px; width:100%; }
+  .quickadd-nota{ font-size:11px; color:#8a3c28; margin-top:6px; opacity:.75; }
+
+  .seccion-label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin:0 0 9px 2px; }
+  .seccion-label.prioridad{ color:var(--terracota); }
+  .seccion-label.curso{ color:var(--mostaza); }
+  .seccion-label.libre{ color:var(--oliva); }
+
+  .tarjeta{
+    position:relative; background:var(--tarjeta); border-radius:12px; padding:14px 14px 14px 18px;
+    margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:10px;
+    border:1px solid var(--borde); border-left-width:4px; box-shadow:0 1px 3px rgba(38,34,30,.04);
+  }
+  .tarjeta:active{ background:var(--crema); }
+  .tarjeta.borde-prioridad{ border-left-color:var(--terracota); }
+  .tarjeta.borde-curso{ border-left-color:var(--mostaza); }
+  .tarjeta.borde-libre{ border-left-color:var(--oliva); border-style:dashed; }
+  .tarjeta-info{ display:flex; align-items:center; gap:11px; min-width:0; flex:1; }
+  .tarjeta-info .ico{ color:var(--gris); flex-shrink:0; }
+  .tarjeta-titulo{ font-size:15px; font-weight:500; }
+  .tarjeta-meta{ font-size:12px; color:var(--gris); margin-top:2px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+  .tarjeta-meta .punto{ opacity:.5; }
+
+  .btn{
+    font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; padding:10px 16px; border-radius:22px;
+    border:none; cursor:pointer; white-space:nowrap; flex-shrink:0; min-height:40px;
+    transition:transform .1s, opacity .1s, background .2s; display:inline-flex; align-items:center; gap:6px; justify-content:center;
+  }
+  .btn:active{ transform:scale(.94); opacity:.85; }
+  .btn:disabled{ opacity:.7; }
+  .btn-terracota{ background:var(--terracota); color:#fff; }
+  .btn-oliva{ background:var(--oliva); color:#fff; }
+  .btn-fantasma{ background:transparent; border:1px solid var(--borde); color:var(--negro); }
+  .btn-ok{ background:var(--verde-ok) !important; color:#fff; }
+  .btn-grande{ width:100%; padding:14px; font-size:15.5px; }
+
+  .posta-card{ background:var(--mostaza-suave); border-radius:12px; padding:14px 16px; margin-bottom:18px; display:flex; gap:10px; align-items:flex-start; }
+  .posta-titulo{ font-size:11.5px; font-weight:600; color:#8a6a1e; text-transform:uppercase; letter-spacing:.04em; }
+  .posta-texto{ font-size:14px; margin-top:3px; }
+  .posta-acciones{ display:flex; gap:8px; margin-top:10px; }
+
+  .vacio{ text-align:center; color:var(--gris); font-size:13.5px; padding:24px 0; }
+
+  .persona-resumen{ background:var(--tarjeta); border:1px solid var(--borde); border-radius:12px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; box-shadow:0 1px 3px rgba(38,34,30,.04); }
+  .persona-resumen .izq{ display:flex; align-items:center; gap:12px; }
+  .avatar{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:14px; flex-shrink:0; }
+
+  .alerta-sinresp{ background:var(--terracota-suave); color:#8a3c28; border-radius:12px; padding:12px 15px; font-size:13.5px; display:flex; align-items:center; gap:9px; margin-bottom:8px; }
+
+  /* Nav inferior — más grande y distinguible */
+  .nav-inferior{ display:flex; justify-content:space-around; align-items:center; padding:8px 6px calc(8px + env(safe-area-inset-bottom)); border-top:1px solid var(--borde); background:var(--tarjeta); position:sticky; bottom:0; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--gris); padding:9px 16px; border-radius:14px; flex:1; }
+  .nav-item span{ font-size:11.5px; font-weight:600; }
+  .nav-item.activo{ color:var(--terracota); background:var(--terracota-suave); }
+
+  .btn-crear-tab{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; background:var(--terracota); color:#fff; border:none; border-radius:14px; font-size:15.5px; font-weight:600; margin-bottom:16px; }
+  .btn-crear-tab:active{ transform:scale(.97); }
+
+  .filtros{ display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:4px; }
+  .filtro-chip{ font-size:12.5px; padding:8px 14px; border-radius:20px; border:1px solid var(--borde); background:var(--tarjeta); white-space:nowrap; color:var(--gris); }
+  .filtro-chip.activo{ background:var(--negro); color:var(--crema); border-color:var(--negro); }
+
+  /* Chips selección (categoría / duración) */
+  .chips-select{ display:flex; gap:8px; flex-wrap:wrap; margin-top:2px; }
+  .chip-opcion{ font-size:13px; padding:9px 14px; border-radius:18px; border:1px solid var(--borde); background:var(--tarjeta); color:var(--negro); }
+  .chip-opcion.activo{ background:var(--terracota); color:#fff; border-color:var(--terracota); }
+
+  .overlay{ position:fixed; inset:0; background:rgba(38,34,30,.5); display:none; align-items:flex-end; z-index:20; }
+  .overlay.activo{ display:flex; }
+  .modal{ background:var(--crema); width:100%; max-width:480px; margin:0 auto; border-radius:22px 22px 0 0; padding:16px 20px calc(20px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto; }
+  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; position:sticky; top:0; background:var(--crema); padding-top:4px; }
+  .modal-header h3{ font-family:'Fraunces',serif; font-weight:500; margin:0; font-size:19px; }
+  .btn-cerrar-modal{ display:flex; align-items:center; gap:5px; background:var(--tarjeta); border:1px solid var(--borde); border-radius:20px; padding:8px 14px; font-size:13px; font-weight:600; color:var(--negro); }
+  .modal label{ font-size:12.5px; color:var(--gris); display:block; margin:13px 0 5px; font-weight:600; }
+  .modal input, .modal select, .modal textarea{ width:100%; padding:11px 13px; border-radius:9px; border:1px solid var(--borde); background:var(--tarjeta); font-family:'Inter',sans-serif; font-size:14.5px; }
+  .modal textarea{ resize:vertical; min-height:60px; }
+  .modal-acciones{ display:flex; gap:10px; margin-top:20px; }
+  .modal-acciones .btn{ flex:1; padding:13px; font-size:14.5px; }
+  .detalle-meta{ font-size:13px; color:var(--gris); margin-bottom:8px; }
+  .detalle-solo-lectura{ background:var(--tarjeta); border:1px solid var(--borde); border-radius:12px; padding:14px; margin-bottom:8px; }
+  .detalle-solo-lectura .titulo{ font-size:16px; font-weight:500; margin-bottom:4px; }
+  .detalle-solo-lectura .desc{ font-size:14px; color:var(--gris); }
+  .detalle-checklist-item{ display:flex; align-items:center; gap:8px; font-size:14px; padding:6px 0; }
+
+  .toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--negro); color:var(--crema); padding:11px 20px; border-radius:20px; font-size:13.5px; z-index:30; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .toast.mostrar{ opacity:1; }
+
+  .placeholder-tab{ text-align:center; color:var(--gris); padding:60px 20px; font-size:14px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="pantalla-login">
+    <div class="login-title voz">Ainhoa Tareas</div>
+    <div class="login-sub">¿Quién sos?</div>
+    <div class="personas">
+      <button class="persona-tag" data-persona="Angie"><span class="av" style="background:var(--terracota-suave);color:#8a3c28;">A</span><span>Angie</span></button>
+      <button class="persona-tag" data-persona="Laurita"><span class="av" style="background:var(--oliva-suave);color:#4a5233;">L</span><span>Laurita</span></button>
+      <button class="persona-tag" data-persona="Solchi"><span class="av" style="background:var(--mostaza-suave);color:#8a6a1e;">S</span><span>Solchi</span></button>
+    </div>
+  </div>
+
+  <!-- PIN -->
+  <div class="pin-wrap" id="pantalla-pin" style="display:none;">
+    <button class="pin-back" id="btn-volver-login"></button>
+    <div class="login-sub" id="pin-nombre" style="margin-bottom:0;">Hola</div>
+    <div class="pin-dots" id="pin-dots"></div>
+    <div class="pin-pad" id="pin-pad"></div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+
+  <!-- BIENVENIDA -->
+  <div class="bienvenida-wrap" id="pantalla-bienvenida" style="display:none;">
+    <div class="voz" id="bienvenida-nombre">¡Hola!</div>
+    <p>Todo listo para arrancar</p>
+    <button class="btn btn-terracota btn-grande" id="btn-entrar-trabajar" style="max-width:260px;">Entrar a trabajar</button>
+  </div>
+
+  <!-- HOY -->
+  <div class="screen" id="pantalla-hoy">
+    <div id="hoy-contenido"><div class="vacio">Cargando…</div></div>
+  </div>
+
+  <!-- TAREAS -->
+  <div class="screen" id="pantalla-tareas">
+    <div class="saludo voz">Tareas</div>
+    <div class="subsaludo">Todo lo que hay cargado</div>
+    <button class="btn-crear-tab" id="btn-crear">Crear tarea</button>
+    <div class="filtros" id="filtros-tareas"></div>
+    <div id="tareas-lista"><div class="vacio">Cargando…</div></div>
+  </div>
+
+  <!-- EQUIPO -->
+  <div class="screen" id="pantalla-equipo">
+    <div class="saludo voz">Equipo</div>
+    <div class="subsaludo">Vista rápida por persona</div>
+    <div id="equipo-contenido"><div class="vacio">Cargando…</div></div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="screen" id="pantalla-perfil">
+    <div class="saludo voz">Perfil</div>
+    <div class="placeholder-tab">Acá va tu racha y tareas libres tomadas esta semana.<br><br><button class="btn btn-fantasma" id="btn-logout">Cerrar sesión</button></div>
+  </div>
+
+  <!-- Nav inferior -->
+  <div class="nav-inferior" id="nav-inferior" style="display:none;">
+    <button class="nav-item activo" data-tab="hoy"><span id="nav-ico-hoy"></span><span>Hoy</span></button>
+    <button class="nav-item" data-tab="tareas"><span id="nav-ico-tareas"></span><span>Tareas</span></button>
+    <button class="nav-item" data-tab="equipo"><span id="nav-ico-equipo"></span><span>Equipo</span></button>
+    <button class="nav-item" data-tab="perfil"><span id="nav-ico-perfil"></span><span>Perfil</span></button>
+  </div>
+
+  <!-- Modal crear tarea -->
+  <div class="overlay" id="overlay-crear">
+    <div class="modal">
+      <div class="modal-header"><h3>Nueva tarea</h3><button class="btn-cerrar-modal" id="cerrar-crear">Cerrar</button></div>
+      <label>Título</label>
+      <input type="text" id="f-titulo" placeholder="Ej: Vaciar percheros">
+      <label>Descripción (opcional)</label>
+      <textarea id="f-descripcion" placeholder="Detalle si hace falta"></textarea>
+      <label>Categoría</label>
+      <div class="chips-select" id="f-categoria-chips"></div>
+      <label>¿Para quién?</label>
+      <select id="f-tipo">
+        <option value="General">General (libre para tomar)</option>
+        <option value="Asignada">Asignada a alguien</option>
+      </select>
+      <div id="wrap-responsable" style="display:none;">
+        <label>Responsable</label>
+        <select id="f-responsable">
+          <option value="Laurita">Laurita</option>
+          <option value="Solchi">Solchi</option>
+          <option value="Angie">Angie</option>
+        </select>
+      </div>
+      <label>Prioridad</label>
+      <div class="chips-select" id="f-prioridad-chips"></div>
+      <label>Duración estimada</label>
+      <div class="chips-select" id="f-duracion-chips"></div>
+      <label>Fecha límite (opcional)</label>
+      <input type="date" id="f-fecha">
+      <div class="modal-acciones">
+        <button class="btn btn-terracota btn-grande" id="guardar-crear">Crear tarea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal detalle (editable solo para creador/Angie) -->
+  <div class="overlay" id="overlay-detalle">
+    <div class="modal">
+      <div class="modal-header"><h3 id="detalle-titulo-h">Tarea</h3><button class="btn-cerrar-modal" id="cerrar-detalle">Cerrar</button></div>
+      <div class="detalle-meta" id="detalle-meta"></div>
+
+      <!-- vista solo lectura -->
+      <div id="detalle-solo-lectura" style="display:none;">
+        <div class="detalle-solo-lectura">
+          <div class="titulo" id="dl-titulo"></div>
+          <div class="desc" id="dl-descripcion"></div>
+        </div>
+        <div id="dl-checklist-wrap" style="display:none;"><label>Checklist</label><div id="dl-checklist"></div></div>
+      </div>
+
+      <!-- vista editable -->
+      <div id="detalle-editable" style="display:none;">
+        <label>Título</label>
+        <input type="text" id="d-titulo">
+        <label>Descripción</label>
+        <textarea id="d-descripcion"></textarea>
+        <label>Categoría</label>
+        <div class="chips-select" id="d-categoria-chips"></div>
+        <label>Prioridad</label>
+        <div class="chips-select" id="d-prioridad-chips"></div>
+        <label>Duración estimada</label>
+        <div class="chips-select" id="d-duracion-chips"></div>
+        <div id="d-checklist-wrap" style="display:none;"><label>Checklist</label><div id="d-checklist"></div></div>
+        <div class="modal-acciones">
+          <button class="btn btn-fantasma btn-grande" id="d-guardar-cambios">Guardar cambios</button>
+        </div>
+      </div>
+
+      <label>Comentario / posta</label>
+      <textarea id="d-comentario" placeholder="Dejá una nota o posta acá"></textarea>
+      <div class="modal-acciones">
+        <button class="btn btn-terracota btn-grande" id="d-guardar-comentario">Guardar nota</button>
+      </div>
+      <div class="modal-acciones" style="margin-top:8px;">
+        <button class="btn btn-oliva btn-grande" id="d-marcar-hecha">Marcar como hecha</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ======================= ICONOS SVG (sin depender de fuentes externas) ======================= */
+const ICONS = {
+  sun: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>',
+  list: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+  users: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3-6 7-6s7 2.7 7 6"/><circle cx="17" cy="8" r="2.5"/><path d="M22 20c0-2.8-2-5-5-5.5"/></svg>',
+  user: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  plus: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  mic: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg>',
+  chevronLeft: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chevronRight: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+  alert: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L2.6 18a1 1 0 0 0 .9 1.5h17a1 1 0 0 0 .9-1.5L13.7 3.9a1 1 0 0 0-1.7 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  check: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  clock: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  tag: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 9-9 9-9-9V2h9z" transform="translate(1,1) scale(0.85)"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  camera: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  package: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8L12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
+  note: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  clipboard: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="3" rx="1"/><path d="M9 12l2 2 4-4"/></svg>',
+  backspace: '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h11v16H9l-6-8 6-8z"/><path d="M14 10l4 4M18 10l-4 4"/></svg>'
+};
+function ic(name, size){ return (ICONS[name] || '').replaceAll('{s}', size || 20); }
+
+/* ======================= CONFIG ======================= */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZbEeODB-LF71H32WLSJafEKpl4sQNzMEiNQ2nvxK6LjNc1pmX0NMEbKSi5s7EXk9d/exec';
+const DURACION_DEFAULT_MIN = 20;
+const CATEGORIAS = ['Showroom','Stock','Proveedoras','Redes','Envíos','Personal','Otro'];
+const DURACIONES = [10,15,20,30,45,60,90];
+const CAT_ICONO = { 'Showroom':'tag', 'Stock':'package', 'Proveedoras':'clipboard', 'Redes':'camera', 'Envíos':'package', 'Personal':'user', 'Otro':'tag' };
+
+/* ======================= ESTADO ======================= */
+let estado = {
+  persona: null,
+  pinBuffer: '',
+  tareas: [],
+  filtroActivo: 'todas',
+  tareaSeleccionadaId: null,
+  reconocimiento: null,
+  grabando: false,
+  fCategoria: 'Showroom',
+  fPrioridad: 'Media',
+  fDuracion: 20,
+  dCategoria: '',
+  dPrioridad: '',
+  dDuracion: 20
+};
+
+/* ======================= HELPERS ======================= */
+function llamar(params){
+  const url = new URL(APPS_SCRIPT_URL);
+  Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+  return fetch(url.toString()).then(r => r.json());
+}
+function mostrarToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('mostrar');
+  setTimeout(() => t.classList.remove('mostrar'), 2200);
+}
+function confirmarBoton(btn, mensaje){
+  const original = btn.className;
+  btn.classList.add('btn-ok');
+  btn.innerHTML = ic('check',16) + ' ' + mensaje;
+}
+function iconoCategoria(cat){ return CAT_ICONO[cat] || 'tag'; }
+function estimarMinutos(lista){ return lista.reduce((acc, t) => acc + (parseInt(t.DuracionEstimada) || DURACION_DEFAULT_MIN), 0); }
+function formatearMinutos(min){ if (min < 60) return min + ' min'; const h = Math.floor(min/60), m = min%60; return h + 'h' + (m ? ' ' + m + 'min' : ''); }
+function puedeEditar(t){ return estado.persona === 'Angie' || t.CreadoPor === estado.persona; }
+
+/* ======================= NAV ICONOS ======================= */
+document.getElementById('nav-ico-hoy').innerHTML = ic('sun',22);
+document.getElementById('nav-ico-tareas').innerHTML = ic('list',22);
+document.getElementById('nav-ico-equipo').innerHTML = ic('users',22);
+document.getElementById('nav-ico-perfil').innerHTML = ic('user',22);
+document.getElementById('btn-volver-login').innerHTML = ic('chevronLeft',18) + ' Volver';
+
+/* ======================= LOGIN ======================= */
+document.querySelectorAll('.persona-tag').forEach(btn => {
+  btn.addEventListener('click', () => {
+    estado.persona = btn.dataset.persona;
+    estado.pinBuffer = '';
+    document.getElementById('pin-nombre').textContent = 'Hola ' + estado.persona;
+    document.getElementById('pantalla-login').style.display = 'none';
+    document.getElementById('pantalla-pin').style.display = 'flex';
+    renderPinDots();
+  });
+});
+document.getElementById('btn-volver-login').addEventListener('click', () => {
+  document.getElementById('pantalla-pin').style.display = 'none';
+  document.getElementById('pantalla-login').style.display = 'flex';
+});
+
+function renderPinPad(){
+  const pad = document.getElementById('pin-pad');
+  pad.innerHTML = '';
+  const teclas = ['1','2','3','4','5','6','7','8','9','','0','borrar'];
+  teclas.forEach(t => {
+    const b = document.createElement('button');
+    if (t === '') { b.style.visibility = 'hidden'; b.className = 'pin-key'; }
+    else if (t === 'borrar') {
+      b.className = 'pin-key borrar';
+      b.innerHTML = ic('backspace',20) + '<span>Borrar</span>';
+      b.addEventListener('click', () => { estado.pinBuffer = estado.pinBuffer.slice(0,-1); renderPinDots(); });
+    }
+    else { b.className = 'pin-key'; b.textContent = t; b.addEventListener('click', () => onPinDigit(t)); }
+    pad.appendChild(b);
+  });
+}
+renderPinPad();
+
+function renderPinDots(){
+  const wrap = document.getElementById('pin-dots');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 4; i++){
+    const d = document.createElement('div');
+    d.className = 'pin-dot' + (i < estado.pinBuffer.length ? ' filled' : '');
+    wrap.appendChild(d);
+  }
+}
+function onPinDigit(d){
+  if (estado.pinBuffer.length >= 4) return;
+  estado.pinBuffer += d;
+  renderPinDots();
+  document.getElementById('pin-error').textContent = '';
+  if (estado.pinBuffer.length === 4) validarPin();
+}
+function validarPin(){
+  llamar({ action:'checkPin', persona: estado.persona, pin: estado.pinBuffer }).then(res => {
+    if (res.ok){
+      localStorage.setItem('ainhoa_persona', estado.persona);
+      mostrarBienvenida();
+    } else {
+      document.getElementById('pin-error').textContent = 'PIN incorrecto, probá de nuevo';
+      estado.pinBuffer = '';
+      renderPinDots();
+    }
+  }).catch(() => {
+    document.getElementById('pin-error').textContent = 'No se pudo conectar. Revisá la conexión.';
+    estado.pinBuffer = '';
+    renderPinDots();
+  });
+}
+
+function mostrarBienvenida(){
+  document.getElementById('pantalla-login').style.display = 'none';
+  document.getElementById('pantalla-pin').style.display = 'none';
+  document.getElementById('bienvenida-nombre').textContent = 'Hola ' + estado.persona;
+  document.getElementById('pantalla-bienvenida').style.display = 'flex';
+}
+document.getElementById('btn-entrar-trabajar').addEventListener('click', () => {
+  document.getElementById('pantalla-bienvenida').style.display = 'none';
+  entrarApp();
+});
+
+window.addEventListener('load', () => {
+  const guardada = localStorage.getItem('ainhoa_persona');
+  if (guardada){ estado.persona = guardada; entrarApp(); }
+});
+document.getElementById('btn-logout').addEventListener('click', () => {
+  localStorage.removeItem('ainhoa_persona');
+  location.reload();
+});
+
+/* ======================= ENTRAR A LA APP ======================= */
+function entrarApp(){
+  document.getElementById('nav-inferior').style.display = 'flex';
+  document.getElementById('app').classList.add(estado.persona === 'Angie' ? 'rol-angie' : 'rol-colab');
+  cambiarTab('hoy');
+  cargarTareas();
+}
+function cargarTareas(){
+  llamar({ action:'listarTareas', persona: estado.persona }).then(res => {
+    estado.tareas = res.tareas || [];
+    renderHoy(); renderTareas(); renderEquipo();
+  }).catch(() => mostrarToast('No se pudo cargar. Revisá tu conexión.'));
+}
+
+/* ======================= NAV ======================= */
+document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => cambiarTab(btn.dataset.tab)));
+function cambiarTab(tab){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('activa'));
+  document.getElementById('pantalla-' + tab).classList.add('activa');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('activo', b.dataset.tab === tab));
+}
+
+/* ======================= VISTA HOY ======================= */
+function renderHoy(){
+  const cont = document.getElementById('hoy-contenido');
+  const mias = estado.persona === 'Angie' ? estado.tareas : estado.tareas.filter(t => t.Responsable === estado.persona || t.Tipo === 'General');
+  const pendientesMias = mias.filter(t => t.Estado !== 'Hecha');
+  const hechas = mias.filter(t => t.Estado === 'Hecha').length;
+  const total = mias.length || 1;
+  const minutosEstimados = estimarMinutos(pendientesMias);
+
+  let html = `<div class="greeting-card">
+    <div class="saludo voz">Hola ${estado.persona}</div>
+    <div class="subsaludo">Tenés ${pendientesMias.length} tarea${pendientesMias.length===1?'':'s'} para hoy</div>
+    <div class="greeting-stats">
+      <div class="greeting-stat">${ic('clock',16)} ~${formatearMinutos(minutosEstimados)}</div>
+      <div class="greeting-stat">${ic('check',16)} ${hechas}/${total} hechas</div>
+    </div>
+    <div class="barra-progreso"><div class="fill" style="width:${Math.round((hechas/total)*100)}%"></div></div>
+  </div>`;
+
+  if (estado.persona === 'Angie'){
+    html += `<div class="quickadd-card">
+      <div class="quickadd-titulo">${ic('mic',15)} Anotado rápido</div>
+      <div class="quickadd-row">
+        <textarea id="quickadd-texto" placeholder="Escribí o dictá una tarea…"></textarea>
+        <button class="mic-btn" id="btn-mic">${ic('mic',20)}</button>
+      </div>
+      <button class="btn btn-terracota quickadd-guardar" id="btn-guardar-quickadd">Guardar</button>
+      <div class="quickadd-nota">El dictado depende del navegador; en Safari/iPhone puede no funcionar — escribilo directo si no anda.</div>
+    </div>`;
+
+    const porPersona = {};
+    ['Laurita','Solchi','Angie'].forEach(p => porPersona[p] = estado.tareas.filter(t => t.Responsable === p && t.Estado !== 'Hecha').length);
+    const sinResp = estado.tareas.filter(t => !t.Responsable && t.Estado !== 'Hecha').length;
+    ['Laurita','Solchi'].forEach(p => {
+      html += `<div class="persona-resumen"><div class="izq"><div class="avatar" style="background:var(--oliva-suave);color:#4a5233;">${p[0]}</div><div><div style="font-size:14.5px;">${p}</div><div style="font-size:12.5px;color:var(--gris);">${porPersona[p]} tarea${porPersona[p]===1?'':'s'} pendiente${porPersona[p]===1?'':'s'}</div></div></div><span style="color:var(--gris-claro);">${ic('chevronRight',18)}</span></div>`;
+    });
+    if (sinResp > 0){
+      html += `<div class="alerta-sinresp">${ic('alert',18)}${sinResp} tarea${sinResp===1?'':'s'} sin responsable</div>`;
+    }
+    cont.innerHTML = html;
+    conectarQuickAdd();
+    return;
+  }
+
+  const posta = mias.find(t => t.EsPosta === 'SI' && t.Estado !== 'Hecha');
+  const prioridad = mias.filter(t => t.Prioridad === 'Alta' && t.Estado !== 'Hecha');
+  const curso = mias.filter(t => t.Estado === 'En curso' && t.Prioridad !== 'Alta');
+  const libres = mias.filter(t => t.Tipo === 'General' && !t.Responsable && t.Estado === 'Pendiente');
+
+  if (posta){
+    html += `<div class="posta-card">${ic('note',18)}<div><div class="posta-titulo">Posta</div><div class="posta-texto">${posta.Comentario || ''}</div>
+      <div class="posta-acciones"><button class="btn btn-terracota" data-abrir="${posta.ID}">Ver y continuar</button></div></div></div>`;
+  }
+  html += renderSeccion('Prioridad', prioridad, 'prioridad', 'borde-prioridad');
+  html += renderSeccion('En curso', curso, 'curso', 'borde-curso');
+  html += renderSeccion('Disponibles', libres, 'libre', 'borde-libre');
+  if (!posta && prioridad.length === 0 && curso.length === 0 && libres.length === 0){
+    html += '<div class="vacio">Sin tareas por ahora ✨</div>';
+  }
+  cont.innerHTML = html;
+}
+
+function renderSeccion(nombre, lista, clase, bordeClase){
+  if (lista.length === 0) return '';
+  let html = `<div class="seccion-label ${clase}">${nombre}</div>`;
+  lista.forEach(t => { html += tarjetaHTML(t, bordeClase); });
+  return html;
+}
+
+function tarjetaHTML(t, bordeClase){
+  const minutos = parseInt(t.DuracionEstimada) || DURACION_DEFAULT_MIN;
+  let accion = '';
+  if (t.Tipo === 'General' && !t.Responsable && t.Estado === 'Pendiente'){
+    accion = `<button class="btn btn-oliva" data-accion="tomar" data-id="${t.ID}">La hago yo</button>`;
+  } else if (t.Estado === 'Pendiente'){
+    accion = `<button class="btn btn-terracota" data-accion="continuar" data-id="${t.ID}">Empezar</button>`;
+  } else if (t.Estado === 'En curso'){
+    accion = `<button class="btn btn-terracota" data-accion="hecha" data-id="${t.ID}">Marcar hecha</button>`;
+  } else {
+    accion = `<button class="btn btn-fantasma" disabled>Hecha</button>`;
+  }
+  const descPreview = t.Descripcion ? `<span class="punto">·</span><span>${t.Descripcion.length > 34 ? t.Descripcion.slice(0,34)+'…' : t.Descripcion}</span>` : '';
+  return `<div class="tarjeta ${bordeClase}" data-abrir="${t.ID}">
+    <div class="tarjeta-info">
+      <span class="ico">${ic(iconoCategoria(t.Categoria),19)}</span>
+      <div><div class="tarjeta-titulo">${t.Titulo}</div>
+      <div class="tarjeta-meta"><span>${t.Categoria || 'Sin categoría'}</span>${t.Responsable ? '<span class="punto">·</span><span>'+t.Responsable+'</span>' : ''}<span class="punto">·</span><span>~${minutos} min</span>${descPreview}</div></div>
+    </div>${accion}
+  </div>`;
+}
+
+document.addEventListener('click', (e) => {
+  const btnAccion = e.target.closest('[data-accion]');
+  if (btnAccion){
+    e.stopPropagation();
+    const id = btnAccion.dataset.id;
+    const accion = btnAccion.dataset.accion;
+    btnAccion.disabled = true;
+    if (accion === 'tomar'){ btnAccion.textContent = 'Tomando…'; tomarTarea(id, btnAccion); }
+    else if (accion === 'continuar'){ btnAccion.textContent = '…'; continuarTarea(id, btnAccion); }
+    else if (accion === 'hecha'){ btnAccion.textContent = 'Guardando…'; marcarHecha(id, btnAccion); }
+    return;
+  }
+  const tarjetaClick = e.target.closest('[data-abrir]');
+  if (tarjetaClick){ abrirDetalle(tarjetaClick.dataset.abrir); }
+});
+
+/* ======================= ACCIONES DE TAREA ======================= */
+function tomarTarea(id, btn){
+  llamar({ action:'tomarTarea', id: id, persona: estado.persona }).then(() => {
+    if (btn) confirmarBoton(btn, 'Tuya');
+    mostrarToast('¡Tuya! Ya la tenés asignada');
+    setTimeout(cargarTareas, 500);
+  });
+}
+function continuarTarea(id, btn){
+  const t = estado.tareas.find(x => x.ID === id);
+  if (t && t.Estado === 'Pendiente' && !t.Responsable){ tomarTarea(id, btn); }
+  else { marcarHecha(id, btn); }
+}
+function marcarHecha(id, btn){
+  llamar({ action:'marcarHecha', id: id, persona: estado.persona }).then(() => {
+    if (btn) confirmarBoton(btn, 'Hecha');
+    mostrarToast('Tarea completada');
+    setTimeout(cargarTareas, 500);
+  });
+}
+
+/* ======================= CHIPS reutilizables ======================= */
+function renderChips(contId, opciones, valorActual, onSelect){
+  const cont = document.getElementById(contId);
+  cont.innerHTML = opciones.map(op => {
+    const val = typeof op === 'number' ? op + ' min' : op;
+    const activo = op === valorActual;
+    return `<button type="button" class="chip-opcion${activo?' activo':''}" data-valor="${op}">${val}</button>`;
+  }).join('');
+  cont.querySelectorAll('.chip-opcion').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const raw = chip.dataset.valor;
+      const valor = isNaN(raw) ? raw : parseInt(raw);
+      onSelect(valor);
+      cont.querySelectorAll('.chip-opcion').forEach(c => c.classList.remove('activo'));
+      chip.classList.add('activo');
+    });
+  });
+}
+
+/* ======================= DETALLE / EDITAR TAREA ======================= */
+function abrirDetalle(id){
+  const t = estado.tareas.find(x => x.ID === id);
+  if (!t) return;
+  estado.tareaSeleccionadaId = id;
+  const editable = puedeEditar(t);
+
+  document.getElementById('detalle-titulo-h').textContent = editable ? 'Editar tarea' : 'Detalle de tarea';
+  document.getElementById('detalle-meta').textContent = (t.Categoria || 'Sin categoría') + ' · ' + (t.Responsable || 'Sin asignar') + ' · ' + t.Estado;
+  document.getElementById('d-comentario').value = t.Comentario || '';
+
+  let pasos = [];
+  try { pasos = JSON.parse(t.Checklist || '[]'); } catch(err) { pasos = []; }
+
+  if (editable){
+    document.getElementById('detalle-solo-lectura').style.display = 'none';
+    document.getElementById('detalle-editable').style.display = 'block';
+    document.getElementById('d-titulo').value = t.Titulo || '';
+    document.getElementById('d-descripcion').value = t.Descripcion || '';
+    estado.dCategoria = t.Categoria || CATEGORIAS[0];
+    estado.dPrioridad = t.Prioridad || 'Media';
+    estado.dDuracion = parseInt(t.DuracionEstimada) || DURACION_DEFAULT_MIN;
+    renderChips('d-categoria-chips', CATEGORIAS, estado.dCategoria, v => estado.dCategoria = v);
+    renderChips('d-prioridad-chips', ['Alta','Media','Baja'], estado.dPrioridad, v => estado.dPrioridad = v);
+    renderChips('d-duracion-chips', DURACIONES, estado.dDuracion, v => estado.dDuracion = v);
+    const checklistWrap = document.getElementById('d-checklist-wrap');
+    if (pasos.length){
+      checklistWrap.style.display = 'block';
+      document.getElementById('d-checklist').innerHTML = pasos.map(p => `<div class="detalle-checklist-item"><input type="checkbox" ${p.hecho?'checked':''} disabled><span>${p.paso}</span></div>`).join('');
+    } else { checklistWrap.style.display = 'none'; }
+  } else {
+    document.getElementById('detalle-editable').style.display = 'none';
+    document.getElementById('detalle-solo-lectura').style.display = 'block';
+    document.getElementById('dl-titulo').textContent = t.Titulo || '';
+    document.getElementById('dl-descripcion').textContent = t.Descripcion || 'Sin descripción';
+    const dlChecklistWrap = document.getElementById('dl-checklist-wrap');
+    if (pasos.length){
+      dlChecklistWrap.style.display = 'block';
+      document.getElementById('dl-checklist').innerHTML = pasos.map(p => `<div class="detalle-checklist-item"><input type="checkbox" ${p.hecho?'checked':''} disabled><span>${p.paso}</span></div>`).join('');
+    } else { dlChecklistWrap.style.display = 'none'; }
+  }
+
+  document.getElementById('d-marcar-hecha').style.display = t.Estado === 'Hecha' ? 'none' : 'block';
+  document.getElementById('overlay-detalle').classList.add('activo');
+}
+document.getElementById('cerrar-detalle').addEventListener('click', () => document.getElementById('overlay-detalle').classList.remove('activo'));
+document.getElementById('overlay-detalle').addEventListener('click', (e) => { if (e.target.id === 'overlay-detalle') e.currentTarget.classList.remove('activo'); });
+
+document.getElementById('d-guardar-cambios').addEventListener('click', (e) => {
+  llamar({
+    action: 'editarTarea', id: estado.tareaSeleccionadaId,
+    titulo: document.getElementById('d-titulo').value,
+    descripcion: document.getElementById('d-descripcion').value,
+    categoria: estado.dCategoria, prioridad: estado.dPrioridad, duracionEstimada: estado.dDuracion
+  }).then(() => {
+    confirmarBoton(e.target, 'Guardado');
+    mostrarToast('Cambios guardados');
+    setTimeout(() => { document.getElementById('overlay-detalle').classList.remove('activo'); cargarTareas(); }, 500);
+  });
+});
+document.getElementById('d-guardar-comentario').addEventListener('click', (e) => {
+  const texto = document.getElementById('d-comentario').value.trim();
+  if (!texto) return;
+  llamar({ action:'dejarPosta', id: estado.tareaSeleccionadaId, nota: texto }).then(() => {
+    confirmarBoton(e.target, 'Guardado');
+    mostrarToast('Nota guardada');
+    setTimeout(() => { document.getElementById('overlay-detalle').classList.remove('activo'); cargarTareas(); }, 500);
+  });
+});
+document.getElementById('d-marcar-hecha').addEventListener('click', (e) => {
+  llamar({ action:'marcarHecha', id: estado.tareaSeleccionadaId, persona: estado.persona }).then(() => {
+    confirmarBoton(e.target, 'Hecha');
+    mostrarToast('Tarea completada');
+    setTimeout(() => { document.getElementById('overlay-detalle').classList.remove('activo'); cargarTareas(); }, 500);
+  });
+});
+
+/* ======================= ANOTADO RÁPIDO (Angie) ======================= */
+function conectarQuickAdd(){
+  const btnMic = document.getElementById('btn-mic');
+  const btnGuardar = document.getElementById('btn-guardar-quickadd');
+  if (!btnMic) return;
+  btnMic.addEventListener('click', () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition){ mostrarToast('Tu navegador no soporta dictado por voz, escribilo directo'); return; }
+    if (estado.grabando){ estado.reconocimiento.stop(); return; }
+    const reco = new SpeechRecognition();
+    reco.lang = 'es-AR'; reco.interimResults = false;
+    reco.onstart = () => { estado.grabando = true; btnMic.classList.add('grabando'); };
+    reco.onend = () => { estado.grabando = false; btnMic.classList.remove('grabando'); };
+    reco.onresult = (ev) => {
+      const texto = ev.results[0][0].transcript;
+      const ta = document.getElementById('quickadd-texto');
+      ta.value = (ta.value ? ta.value + ' ' : '') + texto;
+    };
+    reco.onerror = () => { estado.grabando = false; btnMic.classList.remove('grabando'); mostrarToast('No se pudo grabar en este navegador'); };
+    estado.reconocimiento = reco;
+    reco.start();
+  });
+  btnGuardar.addEventListener('click', () => {
+    const texto = document.getElementById('quickadd-texto').value.trim();
+    if (!texto) { mostrarToast('Escribí algo primero'); return; }
+    llamar({ action:'crearTarea', titulo: texto, categoria:'Personal', tipo:'Asignada', responsable:'Angie', prioridad:'Media', creadoPor: estado.persona }).then(() => {
+      confirmarBoton(btnGuardar, 'Anotado');
+      document.getElementById('quickadd-texto').value = '';
+      setTimeout(cargarTareas, 500);
+    });
+  });
+}
+
+/* ======================= VISTA TAREAS ======================= */
+function renderTareas(){
+  const filtrosWrap = document.getElementById('filtros-tareas');
+  const filtros = ['todas','pendientes','en curso','hechas'];
+  filtrosWrap.innerHTML = filtros.map(f => `<button class="filtro-chip${estado.filtroActivo===f?' activo':''}" data-f="${f}">${f}</button>`).join('');
+  filtrosWrap.querySelectorAll('.filtro-chip').forEach(chip => chip.addEventListener('click', () => { estado.filtroActivo = chip.dataset.f; renderTareas(); }));
+  let lista = estado.tareas;
+  if (estado.filtroActivo === 'pendientes') lista = lista.filter(t => t.Estado === 'Pendiente');
+  if (estado.filtroActivo === 'en curso') lista = lista.filter(t => t.Estado === 'En curso');
+  if (estado.filtroActivo === 'hechas') lista = lista.filter(t => t.Estado === 'Hecha');
+  const cont = document.getElementById('tareas-lista');
+  cont.innerHTML = lista.length ? lista.map(t => tarjetaHTML(t, t.Prioridad === 'Alta' ? 'borde-prioridad' : t.Estado === 'En curso' ? 'borde-curso' : 'borde-libre')).join('') : '<div class="vacio">No hay tareas acá</div>';
+}
+
+/* ======================= VISTA EQUIPO ======================= */
+function renderEquipo(){
+  const cont = document.getElementById('equipo-contenido');
+  const personas = ['Angie','Laurita','Solchi'];
+  let html = '';
+  personas.forEach(p => {
+    const suyas = estado.tareas.filter(t => t.Responsable === p);
+    const pendientes = suyas.filter(t => t.Estado !== 'Hecha').length;
+    const libresTomadas = suyas.filter(t => t.Tipo === 'General').length;
+    html += `<div class="persona-resumen"><div class="izq"><div class="avatar" style="background:var(--terracota-suave);color:#8a3c28;">${p[0]}</div>
+      <div><div style="font-size:14.5px;">${p}</div><div style="font-size:12.5px;color:var(--gris);">${pendientes} pendiente${pendientes===1?'':'s'} · ${libresTomadas} libres tomadas</div></div></div></div>`;
+  });
+  cont.innerHTML = html;
+}
+
+/* ======================= MODAL CREAR TAREA ======================= */
+document.getElementById('btn-crear').addEventListener('click', () => {
+  renderChips('f-categoria-chips', CATEGORIAS, estado.fCategoria, v => estado.fCategoria = v);
+  renderChips('f-prioridad-chips', ['Alta','Media','Baja'], estado.fPrioridad, v => estado.fPrioridad = v);
+  renderChips('f-duracion-chips', DURACIONES, estado.fDuracion, v => estado.fDuracion = v);
+  document.getElementById('overlay-crear').classList.add('activo');
+});
+document.getElementById('cerrar-crear').addEventListener('click', () => document.getElementById('overlay-crear').classList.remove('activo'));
+document.getElementById('overlay-crear').addEventListener('click', (e) => { if (e.target.id === 'overlay-crear') e.currentTarget.classList.remove('activo'); });
+document.getElementById('f-tipo').addEventListener('change', (e) => {
+  document.getElementById('wrap-responsable').style.display = e.target.value === 'Asignada' ? 'block' : 'none';
+});
+document.getElementById('guardar-crear').addEventListener('click', (e) => {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { mostrarToast('Poné un título'); return; }
+  const tipo = document.getElementById('f-tipo').value;
+  llamar({
+    action: 'crearTarea', titulo: titulo,
+    descripcion: document.getElementById('f-descripcion').value,
+    categoria: estado.fCategoria, tipo: tipo,
+    responsable: tipo === 'Asignada' ? document.getElementById('f-responsable').value : '',
+    prioridad: estado.fPrioridad, fechaLimite: document.getElementById('f-fecha').value,
+    duracionEstimada: estado.fDuracion, creadoPor: estado.persona
+  }).then(() => {
+    confirmarBoton(e.target, 'Creada');
+    ['f-titulo','f-descripcion','f-fecha'].forEach(id => document.getElementById(id).value = '');
+    setTimeout(() => { document.getElementById('overlay-crear').classList.remove('activo'); e.target.className = 'btn btn-terracota btn-grande'; e.target.textContent = 'Crear tarea'; cargarTareas(); }, 500);
+  });
+});
+</script>
+</body>
+</html>
